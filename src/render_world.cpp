@@ -27,7 +27,8 @@ Object* Render_World::Closest_Intersection(const Ray& ray,Hit& hit)
 {
     // TODO
     Object* closest_object = NULL;
-    double min_t = 2000000;
+    //double min_t = 2000000;
+    double min_t = std::numeric_limits<double>::max();
     for(unsigned i = 0; i < objects.size(); i++)
     {
         std::vector<Hit> hits;
@@ -74,16 +75,18 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
     // TODO
     vec3 color;
-    vec3 dummy;
+    //vec3 dummy;
     Hit dummyh;
     Object* obj = Closest_Intersection(ray, dummyh);
     
     if(obj != NULL)
     {
+		vec3 dummy;
 		color = obj->material_shader->Shade_Surface(ray, dummy, dummy, recursion_depth, false);
 	}
 	else
 	{
+		vec3 dummy;
 		color = background_shader->Shade_Surface(ray, dummy, dummy, recursion_depth, false);
 	}
 
