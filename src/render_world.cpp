@@ -75,19 +75,28 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
     // TODO
     vec3 color;
-    //vec3 dummy;
+    vec3 dummy;
     Hit dummyh;
     Object* obj = Closest_Intersection(ray, dummyh);
+    vec3 intPoint = ray.Point(dummyh.t);
     
-    if(obj != NULL)
+    //vec3 norm = obj->Normal(intPoint);
+    /*if(dummyh.ray_exiting)
     {
-		vec3 dummy;
-		color = obj->material_shader->Shade_Surface(ray, dummy, dummy, recursion_depth, false);
+		normal = -(obj->Normal(intPoint));
 	}
 	else
 	{
-		vec3 dummy;
-		color = background_shader->Shade_Surface(ray, dummy, dummy, recursion_depth, false);
+		normal = obj->Normal(intPoint);
+	}*/
+    
+    if(obj != NULL)
+    {
+		color = obj->material_shader->Shade_Surface(ray, intPoint, dummy, recursion_depth, false);
+	}
+	else
+	{
+		color = background_shader->Shade_Surface(ray, intPoint, dummy, recursion_depth, false);
 	}
 
     // determine the color here
