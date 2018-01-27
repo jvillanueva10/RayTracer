@@ -41,5 +41,6 @@ vec3 Sphere::Normal(const vec3& point) const
 {
     vec3 normal;
     // TODO: set the normal
+    normal = (point - center)/radius;
     return normal;
 }
