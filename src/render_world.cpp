@@ -74,7 +74,7 @@ void Render_World::Render()
 vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
     // TODO
-    //vec3 n;
+    vec3 n;
     vec3 color;
     vec3 dummy;
     Hit dummyh;
@@ -84,7 +84,7 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
     /*if(intPoint[0] != 0 && intPoint[1] != 0 && intPoint[2] != 0)
     {
 		n = obj->Normal(intPoint);
-		//n.normalized();
+		n.normalized();
 	}
     if(dummyh.ray_exiting)
     {
@@ -97,11 +97,13 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
     
     if(obj != NULL)
     {
-		color = obj->material_shader->Shade_Surface(ray, intPoint, dummy, recursion_depth, dummyh.ray_exiting);
+		n = obj->Normal(intPoint);
+		n.normalized();
+		color = obj->material_shader->Shade_Surface(ray, intPoint, n, recursion_depth, false);
 	}
 	else
 	{
-		color = background_shader->Shade_Surface(ray, intPoint, dummy, recursion_depth, dummyh.ray_exiting);
+		color = background_shader->Shade_Surface(ray, dummy, dummy, recursion_depth, false);
 	}
 
     // determine the color here

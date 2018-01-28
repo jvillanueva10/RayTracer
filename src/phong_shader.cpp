@@ -15,30 +15,40 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
     
     vec3 l;
     vec3 color_light;
-    double cosineD;
-	l = world.lights[recursion_depth]->position - intersection_point;
-	color_light = world.lights[recursion_depth]->Emitted_Light(ray) * (1 / l.magnitude_squared());
-	if(same_side_normal.magnitude() != 0)
-	{
-		cosineD = dot(l.normalized(), same_side_normal.normalized());
-	}
-    vec3 color_material = color_diffuse * l;
     vec3 diffuse;
-    if(is_exiting)
+    for(unsigned i = 0; i < world.lights.size(); i++)
     {
-		diffuse = color_material * color_light * std::max(dot(l, -(same_side_normal)), 0.0) * cosineD;
+		l = world.lights[i]->position - intersection_point;
+		color_light = world.lights[i]->Emitted_Light(ray) * (1 / l.magnitude_squared());
+		diffuse = diffuse + color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
+		/*if(!is_exiting)
+		{
+			diffuse = diffuse + color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
+		}
+		else
+		{
+			diffuse = diffuse + color_diffuse * color_light * std::max(dot(l.normalized(), -(same_side_normal)), 0.0);
+		}*/
+	}
+    /*if(is_exiting)
+    {
+		diffuse = color_material * color_light * std::max(dot(l.normalized(), -(same_side_normal).normalized()), 0.0) * cosineD;
 	}
 	else
 	{
 		diffuse = color_material * color_light * std::max(dot(l, same_side_normal), 0.0) * cosineD;
-    }
+    }*/
     
     vec3 r;
-	r = 2 * dot(l.normalized(), same_side_normal) * same_side_normal - l.normalized();
-	double cosineS;
-	cosineS = dot(r.normalized(), -(ray.direction.normalized()));
-	//vec3 color_material_spec = color_specular * l;
-    vec3 specular = color_specular * l * color_light * pow(std::max(dot(r.normalized(), -(ray.direction.normalized())), 0.0), specular_power) * cosineS;
+    vec3 specular;
+    for(unsigned j = 0; j < world.lights.size(); j++)
+    {
+		l = world.lights[j]->position - intersection_point;
+		color_light = world.lights[j]->Emitted_Light(ray) * (1 / l.magnitude_squared());
+		r = 2 * dot(l.normalized(), same_side_normal) * same_side_normal - l.normalized();
+		//vec3 color_material_spec = color_specular * l;
+		specular = specular + color_specular * color_light * pow(std::max(dot(r.normalized(), -(ray.direction.normalized())), 0.0), specular_power);
+	}
     
     color = ambient + diffuse + specular;
     
