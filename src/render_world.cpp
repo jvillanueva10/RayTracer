@@ -99,6 +99,10 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
     {
 		n = obj->Normal(intPoint);
 		n.normalized();
+		/*if(dummyh.ray_exiting)
+		{
+			n = -n;
+		}*/
 		color = obj->material_shader->Shade_Surface(ray, intPoint, n, recursion_depth, false);
 	}
 	else

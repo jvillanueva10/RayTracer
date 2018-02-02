@@ -12,15 +12,35 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
     vec3 color;
     // TODO: determine the color
     vec3 ambient = world.ambient_color * world.ambient_intensity * color_ambient;
+    color = ambient;
     
     vec3 l;
     vec3 color_light;
     vec3 diffuse;
+    vec3 r;
+    vec3 specular;
     for(unsigned i = 0; i < world.lights.size(); i++)
     {
 		l = world.lights[i]->position - intersection_point;
-		color_light = world.lights[i]->Emitted_Light(ray) * (1 / l.magnitude_squared());
-		diffuse = diffuse + color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
+		color_light = world.lights[i]->Emitted_Light(ray) / l.magnitude_squared();
+		r = 2 * dot(l.normalized(), same_side_normal) * same_side_normal - l.normalized();
+		//diffuse += color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
+		if(world.enable_shadows)
+		{
+			Ray lightRay(intersection_point, l);
+			Hit dummyh;
+			Object* obj = world.Closest_Intersection(lightRay, dummyh);
+			//const vec3 intPoint = lightRay.Point(dummyh.t);
+			if(obj != NULL)
+			{
+				vec3 blkPos = lightRay.endpoint + (dummyh.t * lightRay.direction);
+				if(blkPos.magnitude() < (world.lights[i]->position - intersection_point).magnitude());
+				{
+					continue;
+				}
+			}
+			
+			diffuse += color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
 		/*if(!is_exiting)
 		{
 			diffuse = diffuse + color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
@@ -29,28 +49,34 @@ Shade_Surface(const Ray& ray,const vec3& intersection_point,
 		{
 			diffuse = diffuse + color_diffuse * color_light * std::max(dot(l.normalized(), -(same_side_normal)), 0.0);
 		}*/
-	}
-    /*if(is_exiting)
-    {
-		diffuse = color_material * color_light * std::max(dot(l.normalized(), -(same_side_normal).normalized()), 0.0) * cosineD;
-	}
-	else
-	{
-		diffuse = color_material * color_light * std::max(dot(l, same_side_normal), 0.0) * cosineD;
-    }*/
     
-    vec3 r;
-    vec3 specular;
-    for(unsigned j = 0; j < world.lights.size(); j++)
-    {
-		l = world.lights[j]->position - intersection_point;
-		color_light = world.lights[j]->Emitted_Light(ray) * (1 / l.magnitude_squared());
-		r = 2 * dot(l.normalized(), same_side_normal) * same_side_normal - l.normalized();
+    
+		//l = world.lights[i]->position - intersection_point;
+		//color_light = world.lights[j]->Emitted_Light(ray) * (1 / l.magnitude_squared());
 		//vec3 color_material_spec = color_specular * l;
-		specular = specular + color_specular * color_light * pow(std::max(dot(r.normalized(), -(ray.direction.normalized())), 0.0), specular_power);
+		//specular += color_specular * color_light * pow(std::max(dot(r.normalized(), -(ray.direction)), 0.0), specular_power);
+			/*Ray lightRay(world.lights[i]->position, l);
+			Hit dummyh;
+			Object* obj = world.Closest_Intersection(lightRay, dummyh);*/
+			//const vec3 intPoint = lightRay.Point(dummyh.t);
+			/*if(obj != NULL)
+			{
+				vec3 blkPos = lightRay.endpoint + (dummyh.t * lightRay.direction);
+				if(blkPos.magnitude() < (world.lights[i]->position - intersection_point).magnitude());
+				{
+					continue;
+				}
+			}*/
+			specular += color_specular * color_light * pow(std::max(dot(r.normalized(), -(ray.direction)), 0.0), specular_power);
+		}
+		else
+		{
+			diffuse += color_diffuse * color_light * std::max(dot(l.normalized(), same_side_normal), 0.0);
+			specular += color_specular * color_light * pow(std::max(dot(r.normalized(), -(ray.direction)), 0.0), specular_power);
+		}
 	}
     
-    color = ambient + diffuse + specular;
+    color += diffuse + specular;
     
     return color;
 }
